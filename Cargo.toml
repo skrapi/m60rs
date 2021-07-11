@@ -15,6 +15,8 @@ defmt-rtt = "0.2.0"
 panic-probe = { version = "0.2.0", features = ["print-defmt"] }
 # TODO(4) enter your HAL here
 nrf52840-hal = "0.12.2"
+embedded-hal = "0.2"
+usb-device = "0.2.5"
 
 [features]
 # set logging levels here
