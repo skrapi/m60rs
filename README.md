@@ -12,3 +12,6 @@ Key points to watch out for:
 ## Resources
 1. [Hardware set up](https://wiki.makerdiary.com/m60/developer_guide/hardware/)
 1. [Python code](https://github.com/makerdiary/python-keyboard)
+1. [Keyberon-F4](https://github.com/TeXitoi/keyberon-f4/blob/master/src/main.rs)
+1. [nrf52840 Datasheet](https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.1.pdf)
+
