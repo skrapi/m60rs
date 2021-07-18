@@ -15,7 +15,7 @@ use keyberon::key_code::KeyCode::{self, *};
 use keyberon::layout::Layout;
 use keyberon::matrix::{Matrix, PressedKeys};
 use rtic::app;
-use nrf52840_hal::gpio::{self, gpioa, gpiob, Input, Output, PullUp, PushPull};
+use nrf52840_hal::gpio::{self, port0, port_1, Input, Output, PullUp, PushPull};
 use nrf52840_hal::otg_fs::{UsbBusType, USB};
 use nrf52840_hal::prelude::*;
 use nrf52840_hal::{stm32, timer};
@@ -26,39 +26,37 @@ type UsbClass = keyberon::Class<'static, UsbBusType, Leds>;
 type UsbDevice = usb_device::device::UsbDevice<'static, UsbBusType>;
 
 pub struct Cols(
-    gpiob::PB14<Input<PullUp>>,
-    gpiob::PB15<Input<PullUp>>,
-    gpiob::PB5<Input<PullUp>>,
-    gpiob::PB6<Input<PullUp>>,
-    gpiob::PB7<Input<PullUp>>,
-    gpiob::PB8<Input<PullUp>>,
-    gpioa::PA5<Input<PullUp>>,
-    gpioa::PA6<Input<PullUp>>,
-    gpioa::PA7<Input<PullUp>>,
-    gpiob::PB0<Input<PullUp>>,
-    gpiob::PB1<Input<PullUp>>,
-    gpiob::PB10<Input<PullUp>>,
-    gpioa::PA0<Input<PullUp>>,
+    port0::p0_05<Input<PullUp>>,
+    port0::p0_06<Input<PullUp>>,
+    port0::p0_07<Input<PullUp>>,
+    port0::p0_08<Input<PullUp>>,
+    port0::p1_09<Input<PullUp>>,
+    port0::p1_08<Input<PullUp>>,
+    port0::p0_12<Input<PullUp>>,
+    port0::p0_11<Input<PullUp>>,
 );
 impl_heterogenous_array! {
     Cols,
     dyn InputPin<Error = Infallible>,
-    U13,
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    U8,
+    [1, 2, 3, 4, 5, 6, 7, 8]
 }
 
 pub struct Rows(
-    gpioa::PA4<Output<PushPull>>,
-    gpioa::PA3<Output<PushPull>>,
-    gpioa::PA2<Output<PushPull>>,
-    gpioa::PA1<Output<PushPull>>,
-    gpiob::PB9<Output<PushPull>>,
+    port0::p0_19<Input<PullUp>>,
+    port0::p0_20<Input<PullUp>>,
+    port0::p0_21<Input<PullUp>>,
+    port0::p0_22<Input<PullUp>>,
+    port0::p1_23<Input<PullUp>>,
+    port0::p1_24<Input<PullUp>>,
+    port0::p0_25<Input<PullUp>>,
+    port0::p0_26<Input<PullUp>>,
 );
 impl_heterogenous_array! {
     Rows,
     dyn OutputPin<Error = Infallible>,
-    U5,
-    [0, 1, 2, 3, 4]
+    U8,
+    [1, 2, 3, 4, 5, 6, 7, 8]
 }
 
 const CUT: Action<()> = m(&[LShift, Delete]);
@@ -146,16 +144,11 @@ pub static LAYERS: keyberon::layout::Layers<()> = &[
 ];
 
 pub struct Leds {
-    caps_lock: gpio::gpioc::PC13<gpio::Output<gpio::PushPull>>,
+    red: port0::p0_30<Output<PushPull>>,
+    green: port0::p0_29<Output<PushPull>>,
+    blue: port0::p0_31<Output<PushPull>>,
 }
 impl keyberon::keyboard::Leds for Leds {
-    fn caps_lock(&mut self, status: bool) {
-        if status {
-            self.caps_lock.set_low().unwrap()
-        } else {
-            self.caps_lock.set_high().unwrap()
-        }
-    }
 }
 
 #[app(device = stm32f4xx_hal::stm32, peripherals = true)]
