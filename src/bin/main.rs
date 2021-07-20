@@ -6,7 +6,7 @@ use panic_halt as _;
 
 use core::convert::Infallible;
 use embedded_hal::digital::v2::{InputPin, OutputPin};
-use generic_array::typenum::{U13, U5};
+use generic_array::typenum::U8;
 use keyberon::action::{k, l, m, Action, Action::*, HoldTapConfig};
 use keyberon::debounce::Debouncer;
 use keyberon::impl_heterogenous_array;
@@ -15,10 +15,9 @@ use keyberon::key_code::KeyCode::{self, *};
 use keyberon::layout::Layout;
 use keyberon::matrix::{Matrix, PressedKeys};
 use rtic::app;
-use nrf52840_hal::gpio::{self, port0, port_1, Input, Output, PullUp, PushPull};
-use nrf52840_hal::otg_fs::{UsbBusType, USB};
+use nrf52840_hal::gpio::{self, port0, port1, Input, Output, PullUp, PushPull};
 use nrf52840_hal::prelude::*;
-use nrf52840_hal::{stm32, timer};
+use nrf52840_hal::{timer};
 use usb_device::bus::UsbBusAllocator;
 use usb_device::class::UsbClass as _;
 
@@ -30,8 +29,8 @@ pub struct Cols(
     port0::p0_06<Input<PullUp>>,
     port0::p0_07<Input<PullUp>>,
     port0::p0_08<Input<PullUp>>,
-    port0::p1_09<Input<PullUp>>,
-    port0::p1_08<Input<PullUp>>,
+    port1::p1_09<Input<PullUp>>,
+    port1::p1_08<Input<PullUp>>,
     port0::p0_12<Input<PullUp>>,
     port0::p0_11<Input<PullUp>>,
 );
@@ -39,7 +38,7 @@ impl_heterogenous_array! {
     Cols,
     dyn InputPin<Error = Infallible>,
     U8,
-    [1, 2, 3, 4, 5, 6, 7, 8]
+    [0, 1, 2, 3, 4, 5, 6, 7]
 }
 
 pub struct Rows(
@@ -56,7 +55,7 @@ impl_heterogenous_array! {
     Rows,
     dyn OutputPin<Error = Infallible>,
     U8,
-    [1, 2, 3, 4, 5, 6, 7, 8]
+    [0, 1, 2, 3, 4, 5, 6, 7]
 }
 
 const CUT: Action<()> = m(&[LShift, Delete]);
@@ -151,7 +150,7 @@ pub struct Leds {
 impl keyberon::keyboard::Leds for Leds {
 }
 
-#[app(device = stm32f4xx_hal::stm32, peripherals = true)]
+#[app(device = nrf52840_hal::pac, peripherals = true)]
 const APP: () = {
     struct Resources {
         usb_dev: UsbDevice,
@@ -159,7 +158,7 @@ const APP: () = {
         matrix: Matrix<Cols, Rows>,
         debouncer: Debouncer<PressedKeys<U5, U13>>,
         layout: Layout<()>,
-        timer: timer::Timer<stm32::TIM3>,
+        timer: timer::Timer,
     }
 
     #[init]
@@ -174,10 +173,7 @@ const APP: () = {
             .sysclk(84.mhz())
             .require_pll48clk()
             .freeze();
-        let gpioa = c.device.GPIOA.split();
-        let gpiob = c.device.GPIOB.split();
-        let gpioc = c.device.GPIOC.split();
-
+        
         let mut led = gpioc.pc13.into_push_pull_output();
         led.set_low().unwrap();
         let leds = Leds { caps_lock: led };
@@ -200,19 +196,14 @@ const APP: () = {
 
         let matrix = Matrix::new(
             Cols(
-                gpiob.pb14.into_pull_up_input(),
-                gpiob.pb15.into_pull_up_input(),
-                gpiob.pb5.into_pull_up_input(),
-                gpiob.pb6.into_pull_up_input(),
-                gpiob.pb7.into_pull_up_input(),
-                gpiob.pb8.into_pull_up_input(),
-                gpioa.pa5.into_pull_up_input(),
-                gpioa.pa6.into_pull_up_input(),
-                gpioa.pa7.into_pull_up_input(),
-                gpiob.pb0.into_pull_up_input(),
-                gpiob.pb1.into_pull_up_input(),
-                gpiob.pb10.into_pull_up_input(),
-                gpioa.pa0.into_pull_up_input(),
+                port0.p0_05.into_pull_up_input(),
+                port0.p0_06.into_pull_up_input(),
+                port0.p0_07.into_pull_up_input(),
+                port0.p0_08.into_pull_up_input(),
+                port1.p1_09.into_pull_up_input(),
+                port1.p1_08.into_pull_up_input(),
+                port0.p0_12.into_pull_up_input(),
+                port0.p0_11.into_pull_up_input(),
             ),
             Rows(
                 gpioa.pa4.into_push_pull_output(),
@@ -263,7 +254,6 @@ const APP: () = {
 };
 
 fn send_report(iter: impl Iterator<Item = KeyCode>, usb_class: &mut resources::usb_class<'_>) {
-    use rtic::Mutex;
     let report: KbHidReport = iter.collect();
     if usb_class.lock(|k| k.device_mut().set_keyboard_report(report.clone())) {
         while let Ok(0) = usb_class.lock(|k| k.write(report.as_bytes())) {}
