@@ -23,6 +23,7 @@ cargo build --example blinky --release
 ```
 
 ### Flashing back to original UF2 Bootloader
+Got image from https://github.com/adafruit/Adafruit_nRF52_Bootloader
 ```sh
 ./flash adm_b_nrf52840_1_bootloader-0.7.0_s140_6.1.1.hex
 ```
