@@ -22,6 +22,11 @@ cargo build --example blinky --release
 /flash target/thumbv7em-none-eabihf/release/examples/blinky
 ```
 
+### Flashing back to original UF2 Bootloader
+```sh
+./flash adm_b_nrf52840_1_bootloader-0.7.0_s140_6.1.1.hex
+```
+
 ## Resources
 1. [Hardware set up](https://wiki.makerdiary.com/m60/developer_guide/hardware/)
 1. [Python code](https://github.com/makerdiary/python-keyboard)
