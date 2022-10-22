@@ -5,9 +5,6 @@ An attempt to learn Embedded Rust using the M60 keyboard from Makerdairy.
 ## Project Setup
 To start I followed along with the instructions from [James Munns](https://github.com/jamesmunns/m60-keyboard).
 
-Key points to watch out for:
-1. 
-
 
 ## Blinky
 Blinky is an example which turns on the red led if the reset button is pressed.
@@ -17,13 +14,20 @@ Blinky is an example which turns on the red led if the reset button is pressed.
 cargo build --example blinky --release
 ```
 
+
+## Connecting to an SWD
+1. The board needs to be powered from the USB
+1. Connect 3V3, GND, SWCLK and SWDIO pins.
+1. It is not necessary to connect the reset pin
+1. Use openocd to flash the micro
+
 ### Flashing Blinky
 ```sh
 /flash target/thumbv7em-none-eabihf/release/examples/blinky
 ```
 
 ### Flashing back to original UF2 Bootloader
-Got image from https://github.com/adafruit/Adafruit_nRF52_Bootloader
+Get image from [here](https://github.com/adafruit/Adafruit_nRF52_Bootloader)
 ```sh
 ./flash adm_b_nrf52840_1_bootloader-0.7.0_s140_6.1.1.hex
 ```
